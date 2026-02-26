@@ -233,13 +233,13 @@
                 authToken = newToken;
                 setToken(newToken);
                 isLoggedIn = true;
-                console.log('[Auth] Token refreshed successfully');
+                //console.log('[Auth] Token refreshed successfully');
                 return newToken;
             }
             console.warn('[Auth] Refresh response did not contain a new token');
             return null;
         }).catch(function (err) {
-            console.error('[Auth] Token refresh failed:', err.statusText || err);
+            // console.error('[Auth] Token refresh failed:', err.statusText || err);
             return null;
         }).always(function () {
             refreshingPromise = null;
@@ -257,7 +257,7 @@
         if (!authToken) return Promise.resolve();
 
         if (isTokenExpired(authToken)) {
-            console.log('[Auth] Token expired — attempting refresh');
+            //console.log('[Auth] Token expired — attempting refresh');
             return refreshAuthToken().then(function (newToken) {
                 if (!newToken) {
                     handleSessionExpired();
@@ -465,7 +465,7 @@
             }
 
             sseToken = await reserveResponse.text();
-            console.log('[SSE] Token acquired');
+            //console.log('[SSE] Token acquired');
 
             // 2. Register the subscription query
             const subHeaders = {
@@ -488,7 +488,7 @@
                 return;
             }
 
-            console.log('[SSE] Subscription registered');
+            //console.log('[SSE] Subscription registered');
 
             // 3. Open the SSE stream
             if (eventSource) eventSource.close();
@@ -499,16 +499,16 @@
                     const payload = JSON.parse(event.data);
                     const updated = payload?.payload?.data?.catalogItemUpdated;
                     if (updated) {
-                        console.log('[SSE] Item updated:', updated.title);
+                        //console.log('[SSE] Item updated:', updated.title);
                         handleItemUpdate(updated);
                     }
                 } catch (e) {
-                    console.error('[SSE] Parse error:', e);
+                    // console.error('[SSE] Parse error:', e);
                 }
             });
 
             eventSource.addEventListener('test', function (event) {
-                console.log('[SSE] Test event received:', JSON.parse(event.data));
+                // console.log('[SSE] Test event received:', JSON.parse(event.data));
             });
 
             eventSource.onerror = function () {
@@ -518,9 +518,8 @@
                 setTimeout(startSubscription, 5000);
             };
 
-            console.log('[SSE] Stream connected ✓');
+            // console.log('[SSE] Stream connected ✓');
         } catch (err) {
-            console.log(err);
             console.warn('[SSE] Setup error (plugin may not be active):', err.message);
         }
     }
@@ -529,7 +528,7 @@
         if (eventSource) {
             eventSource.close();
             eventSource = null;
-            console.log('[SSE] Stream closed');
+            // console.log('[SSE] Stream closed');
         }
     }
 
@@ -690,7 +689,6 @@
         // Safety: only render items that are NOT Set B
         const safeItems = items.filter(i => i.cardSet !== 'B');
         if (safeItems.length) {
-            console.log(items);
             $setA.html(safeItems.map(renderCard).join(''));
         } else {
             $setA.html('<div class="col-12"><p style="color:var(--text-muted)">No items matched your criteria.</p></div>');
@@ -766,7 +764,7 @@
         gqlFetch(CATALOG_QUERY, buildQueryVars(stateA, 'A'))
             .then(function (resp) {
                 if (resp.errors) {
-                    console.error('GraphQL errors (Set A):', resp.errors);
+                    // console.error('GraphQL errors (Set A):', resp.errors);
                     $setA.html('<p style="color:#ef9a9a">Failed to load catalog. Is WordPress running?</p>');
                     return;
                 }
@@ -776,7 +774,7 @@
                 renderSetA(catalogItemsA);
             })
             .catch(function (xhr) {
-                console.error('Request failed (Set A):', xhr.statusText);
+                // console.error('Request failed (Set A):', xhr.statusText);
                 $setA.html('<p style="color:#ef9a9a">Could not connect to WordPress.</p>');
             });
     }
@@ -792,7 +790,7 @@
         gqlFetch(CATALOG_QUERY, buildQueryVars(stateB, 'B'))
             .then(function (resp) {
                 if (resp.errors) {
-                    console.error('GraphQL errors (Set B):', resp.errors);
+                    // console.error('GraphQL errors (Set B):', resp.errors);
                     return;
                 }
                 const data = resp.data?.catalogItems;
@@ -801,7 +799,7 @@
                 renderSetB(catalogItemsB);
             })
             .catch(function (xhr) {
-                console.error('Request failed (Set B):', xhr.statusText);
+                // console.error('Request failed (Set B):', xhr.statusText);
             });
     }
 
@@ -840,7 +838,7 @@
                     stateA.pageInfo = newPageInfo;
                     renderSetA(catalogItemsA);
                     flashCards(changedIds);
-                    if (changedIds.length) console.log('[Poll] Set A items updated:', changedIds);
+                    // if (changedIds.length) console.log('[Poll] Set A items updated:', changedIds);
                 }
             });
 
@@ -865,7 +863,7 @@
                     stateB.pageInfo = newPageInfo;
                     renderSetB(catalogItemsB);
                     flashCards(changedIds);
-                    if (changedIds.length) console.log('[Poll] Set B items updated:', changedIds);
+                    // if (changedIds.length) console.log('[Poll] Set B items updated:', changedIds);
                 }
             });
         }, 5000);
@@ -932,12 +930,12 @@
             if (!authToken) return;
 
             if (isTokenExpired(authToken)) {
-                console.log('[Auth] Periodic check: token expired');
+                //console.log('[Auth] Periodic check: token expired');
                 refreshAuthToken().then(function (newToken) {
                     if (!newToken) handleSessionExpired();
                 });
             } else if (tokenExpiresSoon(authToken, 120)) {
-                console.log('[Auth] Periodic check: token expires soon — refreshing');
+                //console.log('[Auth] Periodic check: token expires soon — refreshing');
                 refreshAuthToken();
             }
         }, 30000); // check every 30 seconds
@@ -965,7 +963,7 @@
             // Auth token expired — try the refresh token
             const rt = getRefreshToken();
             if (rt) {
-                console.log('[Auth] Stored token expired — attempting silent refresh');
+                //console.log('[Auth] Stored token expired — attempting silent refresh');
                 refreshAuthToken().then(function (newToken) {
                     if (newToken) {
                         const payload = decodeJwtPayload(newToken);
@@ -1059,11 +1057,11 @@
 
         $(document).on('click', '#btn-next-a', function () {
             goNext(stateA, loadSetA);
-            window.scrollTo({ top: $('.filter-bar').offset().top - 100, behavior: 'smooth' });
+            window.scrollTo({ top: $('#set-a-grid').offset().top - 100, behavior: 'smooth' });
         });
         $(document).on('click', '#btn-prev-a', function () {
             goPrev(stateA, loadSetA);
-            window.scrollTo({ top: $('.filter-bar').offset().top - 100, behavior: 'smooth' });
+            window.scrollTo({ top: $('#set-a-grid').offset().top - 100, behavior: 'smooth' });
         });
         $(document).on('click', '#btn-next-b', function () {
             goNext(stateB, loadSetB);
@@ -1073,7 +1071,6 @@
             goPrev(stateB, loadSetB);
             window.scrollTo({ top: $('#set-b-section').offset().top - 100, behavior: 'smooth' });
         });
-
 
         // ── Login Form (login.html) ──────────────────────────────────────────
         $('#login-form').on('submit', function (e) {

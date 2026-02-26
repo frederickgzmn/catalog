@@ -520,7 +520,6 @@
 
             console.log('[SSE] Stream connected ✓');
         } catch (err) {
-            console.log(err);
             console.warn('[SSE] Setup error (plugin may not be active):', err.message);
         }
     }
@@ -690,7 +689,6 @@
         // Safety: only render items that are NOT Set B
         const safeItems = items.filter(i => i.cardSet !== 'B');
         if (safeItems.length) {
-            console.log(items);
             $setA.html(safeItems.map(renderCard).join(''));
         } else {
             $setA.html('<div class="col-12"><p style="color:var(--text-muted)">No items matched your criteria.</p></div>');
@@ -1059,11 +1057,11 @@
 
         $(document).on('click', '#btn-next-a', function () {
             goNext(stateA, loadSetA);
-            window.scrollTo({ top: $('.filter-bar').offset().top - 100, behavior: 'smooth' });
+            window.scrollTo({ top: $('#set-a-grid').offset().top - 100, behavior: 'smooth' });
         });
         $(document).on('click', '#btn-prev-a', function () {
             goPrev(stateA, loadSetA);
-            window.scrollTo({ top: $('.filter-bar').offset().top - 100, behavior: 'smooth' });
+            window.scrollTo({ top: $('#set-a-grid').offset().top - 100, behavior: 'smooth' });
         });
         $(document).on('click', '#btn-next-b', function () {
             goNext(stateB, loadSetB);

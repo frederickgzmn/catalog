@@ -1,0 +1,944 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Design System – CSS Custom Properties
+// ─────────────────────────────────────────────────────────────────────────────
+@use 'sass:color';
+
+// Google Fonts
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap');
+
+:root {
+  // Palette
+  --bg: #0d0f14;
+  --bg-card: #13161e;
+  --bg-glass: rgba(255, 255, 255, 0.04);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(120, 80, 255, 0.35);
+
+  --primary: #7c4dff;
+  --primary-text: #a78bfa; // lighter purple for text on dark bg (≈7.1:1 AAA)
+  --primary-glow: rgba(124, 77, 255, 0.25);
+  --accent: #00e5ff;
+  --gold: #ffd54f;
+  --gold-glow: rgba(255, 213, 79, 0.2);
+
+  --text: #e8eaf6;
+  --text-muted: #9a9cba; // was #7b7d9a (4.8:1) → now ≈6.8:1 (AAA)
+
+  // Focus
+  --focus-ring: rgba(167, 139, 250, 0.5);
+
+  // Typography
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-display: 'Outfit', sans-serif;
+
+  // Spacing
+  --radius: 16px;
+  --radius-sm: 8px;
+  --transition: 0.25s ease;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reset & Base
+// ─────────────────────────────────────────────────────────────────────────────
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--text);
+  background: var(--bg);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--primary-text);
+  text-decoration: none;
+  transition: opacity var(--transition);
+}
+
+a:hover {
+  opacity: .85;
+}
+
+// ── Accessible focus ring (keyboard only) ────────────────────────────────
+:focus-visible {
+  border: 2px solid white !important;
+  outline: 2px solid black !important;
+  outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+// ── Skip-to-content link ─────────────────────────────────────────────────
+.skip-link {
+  color: #fff;
+  background: var(--primary);
+  font-weight: 600;
+  font-size: .875rem;
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 10000;
+  border-radius: var(--radius-sm);
+  transition: top .2s ease;
+  padding: .5rem 1rem;
+
+  &:focus {
+    top: .75rem;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Navbar
+// ─────────────────────────────────────────────────────────────────────────────
+.navbar {
+  border-bottom: 1px solid var(--border);
+  background: rgba(13, 15, 20, 0.85);
+  z-index: 1000;
+  backdrop-filter: blur(14px);
+
+  &__brand {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 800;
+    background-clip: text;
+    letter-spacing: -0.02em;
+
+    @media (min-width: 768px) {
+      font-size: 1.4rem;
+    }
+
+    @media (min-width: 1200px) {
+      font-size: 1.6rem;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Buttons
+// ─────────────────────────────────────────────────────────────────────────────
+.btn {
+  border: none;
+  font-family: var(--font-body);
+  font-size: .875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  padding: .55rem 1.25rem;
+
+  &-primary {
+    color: #fff;
+    background: var(--primary);
+    box-shadow: 0 0 18px var(--primary-glow);
+
+    &:hover {
+      filter: brightness(1.15);
+      box-shadow: 0 0 28px var(--primary-glow);
+      transform: translateY(-1px);
+    }
+  }
+
+  &-ghost {
+    color: var(--text);
+    border: 1px solid var(--border);
+    background: var(--bg-glass);
+
+    &:hover {
+      color: var(--primary-text);
+      border-color: var(--primary-text);
+      background: var(--primary-glow);
+    }
+  }
+
+  &-gold {
+    color: #1a1400;
+    background: var(--gold);
+    font-weight: 700;
+    box-shadow: 0 0 18px var(--gold-glow);
+
+    &:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 0 28px var(--gold-glow);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Hero Section
+// ─────────────────────────────────────────────────────────────────────────────
+.hero {
+  position: relative;
+  overflow: hidden;
+
+  // Radial glows
+  &::before,
+  &::after {
+    content: '';
+    border-radius: 50%;
+    position: absolute;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+
+  &::before {
+    background: radial-gradient(circle, rgba(124, 77, 255, 0.18) 0%, transparent 70%);
+    position: absolute;
+    top: -150px;
+    left: 50%;
+    height: 600px;
+    width: 600px;
+    transform: translateX(-50%);
+  }
+
+  &::after {
+    background: radial-gradient(circle, rgba(0, 229, 255, 0.1) 0%, transparent 70%);
+    position: absolute;
+    bottom: 0;
+    right: 10%;
+    height: 400px;
+    width: 400px;
+  }
+
+  &__eyebrow {
+    color: white;
+    border: 1px solid var(--border-glow);
+    background: var(--primary-glow);
+    font-size: .78rem;
+    font-weight: 600;
+    display: inline-block;
+    border-radius: 999px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+    padding: .3rem .9rem;
+  }
+
+  &__title {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+
+    @media (min-width: 768px) {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+    }
+
+    @media (min-width: 1200px) {
+      font-size: clamp(3.5rem, 7vw, 5rem);
+    }
+
+    margin-bottom: 1rem;
+
+    span {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      background-clip: text;
+    }
+  }
+
+  &__sub {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    height: auto;
+    width: auto;
+    max-width: 520px;
+    line-height: 1.6;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Card Grid – layout handled by Bootstrap row / row-cols / g-4
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Catalog Card
+// ─────────────────────────────────────────────────────────────────────────────
+.catalog-card {
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+
+  &:hover {
+    border-color: rgba(124, 77, 255, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  }
+
+  &__thumb {
+    background: linear-gradient(135deg, #1a1d2e, #232740);
+    height: auto;
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+  }
+
+  &__thumb-placeholder {
+    background: linear-gradient(135deg, #1a1d2e 0%, #232740 100%);
+    font-size: 2.5rem;
+    height: auto;
+    width: 100%;
+    aspect-ratio: 16/9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.4;
+  }
+
+  &__body {
+    padding: 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+  }
+
+  &__badge {
+    color: var(--primary-text);
+    border: 1px solid var(--border-glow);
+    background: var(--primary-glow);
+    font-size: .7rem;
+    font-weight: 700;
+    display: inline-block;
+    border-radius: 999px;
+    align-self: flex-start;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: .2rem .65rem;
+  }
+
+  &__title {
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+
+    @media (min-width: 768px) {
+      font-size: 1.15rem;
+    }
+
+    @media (min-width: 1200px) {
+      font-size: 1.25rem;
+    }
+  }
+
+  &__desc {
+    color: var(--text-muted);
+    font-size: .875rem;
+    line-height: 1.55;
+    flex: 1;
+  }
+
+  &__footer {
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: 1rem 1.25rem;
+  }
+
+  &__price {
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 800;
+
+    &-label {
+      color: var(--text-muted);
+      font-size: .7rem;
+      font-weight: 400;
+      display: block;
+      line-height: 1;
+    }
+
+    &--lg {
+      font-size: 2rem;
+      line-height: 1.1;
+      margin-bottom: .25rem;
+    }
+  }
+
+  // ── Meta row (category + badge inline) ────────────────────────────────────
+  &__meta-row {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+  }
+
+  &__category {
+    color: var(--accent);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    background: rgba(0, 229, 255, 0.08);
+    font-size: .68rem;
+    font-weight: 600;
+    display: inline-block;
+    border-radius: var(--radius-sm);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: .15rem .55rem;
+  }
+
+  // ── Attributes grid ────────────────────────────────────────────────────────
+  &__attrs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .35rem .75rem;
+    padding: .5rem 0;
+  }
+
+  &__attr {
+    display: flex;
+    flex-direction: column;
+    gap: .1rem;
+  }
+
+  &__attr-key {
+    font-size: .62rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-muted);
+  }
+
+  &__attr-val {
+    color: var(--text);
+    font-size: .82rem;
+    font-weight: 600;
+  }
+
+  // ── Set B (Members) ─────────────────────────────────────────────────────────
+  &--set-b {
+    border-color: rgba(255, 213, 79, 0.2);
+
+    &:hover {
+      border-color: rgba(255, 213, 79, 0.5);
+      box-shadow: 0 20px 60px rgba(255, 213, 79, 0.08);
+    }
+
+    .catalog-card__badge {
+      color: var(--gold);
+      border-color: rgba(255, 213, 79, 0.35);
+      background: var(--gold-glow);
+    }
+
+    .catalog-card__price {
+      color: var(--gold);
+    }
+  }
+
+  // ── Featured card ───────────────────────────────────────────────────────────
+  &--featured {
+    .catalog-card__thumb-placeholder {
+      aspect-ratio: 21/9;
+    }
+  }
+
+  // ── Price-first layout ──────────────────────────────────────────────────────
+  &--price_first {
+    .catalog-card__thumb {
+      aspect-ratio: 4/3;
+    }
+
+    .catalog-card__thumb-placeholder {
+      aspect-ratio: 4/3;
+    }
+  }
+
+  // ── Specs-first layout ──────────────────────────────────────────────────────
+  &--specs_first {
+    .catalog-card__attrs {
+      border-bottom: 1px solid var(--border);
+      margin-bottom: .25rem;
+      padding: .65rem 0;
+    }
+  }
+
+  // ── Subtitle ────────────────────────────────────────────────────────────────
+  &__subtitle {
+    color: var(--text-muted);
+    font-size: .85rem;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  // ── Attribute badge pills ──────────────────────────────────────────────────
+  &__attr-badge {
+    color: var(--primary-light, #b388ff);
+    border: 1px solid rgba(124, 77, 255, 0.2);
+    background: rgba(124, 77, 255, 0.08);
+    font-size: .65rem;
+    font-weight: 600;
+    display: inline-block;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    padding: .15rem .5rem;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mapping Indicator Bar
+// ─────────────────────────────────────────────────────────────────────────────
+.mapping-bar {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: 1.25rem;
+
+  &__label {
+    color: var(--text-muted);
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    margin-right: .25rem;
+  }
+}
+
+.mapping-pill {
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: .72rem;
+  font-weight: 600;
+  border-radius: 999px;
+  transition: all var(--transition);
+  cursor: default;
+  padding: .3rem .75rem;
+
+  &--active {
+    color: var(--primary-text);
+    border-color: var(--border-glow);
+    background: var(--primary-glow);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Full-width button utility
+// ─────────────────────────────────────────────────────────────────────────────
+.btn--full {
+  width: 100%;
+  justify-content: center;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Members-only divider
+// ─────────────────────────────────────────────────────────────────────────────
+// Layout (flex) handled by Bootstrap d-flex + align-items-center + gap-3
+.members-divider {
+  &__line {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255, 213, 79, 0.3), transparent);
+  }
+
+  &__label {
+    color: var(--gold);
+    border: 1px solid rgba(255, 213, 79, 0.4);
+    background: rgba(255, 213, 79, 0.06);
+    font-size: .78rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    border-radius: 999px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    padding: .4rem 1rem;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Auth Gate (shown when not logged in, above Set B)
+// ─────────────────────────────────────────────────────────────────────────────
+// text-center handled by Bootstrap class
+.auth-gate {
+  border: 1px solid rgba(255, 213, 79, 0.2);
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 3rem 2rem;
+
+  &__icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  &__title {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: .5rem;
+  }
+
+  &__desc {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Login Page
+// ─────────────────────────────────────────────────────────────────────────────
+// Layout (flex centering, min-height, padding) handled by Bootstrap utilities
+.login-page {
+  background:
+    radial-gradient(ellipse 60% 50% at 30% 40%, rgba(124, 77, 255, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 70% 60%, rgba(0, 229, 255, 0.08) 0%, transparent 70%),
+    var(--bg);
+}
+
+.login-card {
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  width: 100%;
+  max-width: 420px;
+  border-radius: calc(var(--radius) * 1.5);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+
+  @media (min-width: 768px) {
+    padding: 2.5rem;
+  }
+
+  @media (min-width: 1200px) {
+    padding: 3rem;
+  }
+
+  padding: 1.5rem;
+
+  &__logo {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 800;
+    background-clip: text;
+    text-align: center;
+    margin-bottom: .5rem;
+  }
+
+  &__sub {
+    color: var(--text-muted);
+    font-size: .875rem;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.25rem;
+
+    label {
+      color: var(--text-muted);
+      font-size: .8rem;
+      font-weight: 600;
+      display: block;
+      margin-bottom: .4rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    input {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05);
+      font-family: var(--font-body);
+      font-size: .9rem;
+      width: 100%;
+      height: auto;
+      border-radius: var(--radius-sm);
+      transition: border-color var(--transition), box-shadow var(--transition);
+      padding: .75rem 1rem;
+
+      &:focus {
+        border-color: var(--primary-text);
+        outline: none;
+        box-shadow: 0 0 0 3px var(--focus-ring);
+      }
+
+      &::placeholder {
+        color: var(--text-muted);
+      }
+    }
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+    padding: .8rem 1.5rem;
+    margin-top: .5rem;
+  }
+
+  &__footer {
+    color: var(--text-muted);
+    font-size: .85rem;
+    text-align: center;
+    margin-top: 1.5rem;
+
+    a {
+      color: var(--primary-text);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Alert / Toast messages
+// ─────────────────────────────────────────────────────────────────────────────
+.msg {
+  font-size: .875rem;
+  display: none;
+  border-radius: var(--radius-sm);
+  margin-top: 1rem;
+  padding: .75rem 1rem;
+
+  &.error {
+    color: #ef9a9a;
+    border: 1px solid rgba(244, 67, 54, 0.35);
+    background: rgba(244, 67, 54, 0.12);
+    display: block;
+  }
+
+  &.success {
+    color: #a5d6a7;
+    border: 1px solid rgba(76, 175, 80, 0.35);
+    background: rgba(76, 175, 80, 0.12);
+    display: block;
+  }
+}
+
+// Toast notification (ephemeral, bottom-center)
+.toast-msg {
+  color: var(--text);
+  border: 1px solid var(--border);
+  background: rgba(19, 22, 30, 0.95);
+  font-size: .875rem;
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  height: auto;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  transform: translateX(-50%) translateY(20px);
+  border-radius: var(--radius-sm);
+  padding: .75rem 1.5rem;
+
+  &--visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Loading Skeleton
+// ─────────────────────────────────────────────────────────────────────────────
+@keyframes shimmer {
+  0% {
+    background-position: -800px 0;
+  }
+
+  100% {
+    background-position: 800px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #1c1f2b 25%, #252838 50%, #1c1f2b 75%);
+  background-size: 800px 100%;
+  border-radius: var(--radius-sm);
+  animation: shimmer 1.6s infinite;
+}
+
+.skeleton-card {
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  overflow: hidden;
+
+  .skel-thumb {
+    height: 160px;
+    @extend .skeleton;
+  }
+
+  .skel-body {
+    padding: 1.25rem;
+  }
+
+  .skel-line {
+    height: 12px;
+    border-radius: 6px;
+    margin-bottom: .75rem;
+    @extend .skeleton;
+  }
+
+  .skel-line-sm {
+    width: 60%;
+    @extend .skel-line;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Fade-in Animation
+// ─────────────────────────────────────────────────────────────────────────────
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.catalog-card {
+  animation: fadeUp .4s ease both;
+}
+
+@for $i from 1 through 12 {
+  .catalog-card:nth-child(#{$i}) {
+    animation-delay: #{($i - 1) * 0.06}s;
+  }
+}
+
+// ── Reduced motion ──────────────────────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Live-update flash (SSE subscription)
+// ─────────────────────────────────────────────────────────────────────────────
+@keyframes cardFlash {
+  0% {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0 rgba(124, 77, 255, 0.5);
+  }
+
+  50% {
+    box-shadow: 0 0 24px 4px rgba(124, 77, 255, 0.25);
+  }
+
+  100% {
+    border-color: var(--border);
+    box-shadow: none;
+  }
+}
+
+.catalog-card--flash {
+  animation: cardFlash 1.2s ease both !important;
+}
+
+.catalog-card--set-b.catalog-card--flash {
+  animation: cardFlashGold 1.2s ease both !important;
+}
+
+@keyframes cardFlashGold {
+  0% {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 0 rgba(255, 213, 79, 0.5);
+  }
+
+  50% {
+    box-shadow: 0 0 24px 4px rgba(255, 213, 79, 0.25);
+  }
+
+  100% {
+    border-color: rgba(255, 213, 79, 0.2);
+    box-shadow: none;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Footer
+// ─────────────────────────────────────────────────────────────────────────────
+// Layout (text-align, padding) handled by Bootstrap container + text-center + py-4
+.site-footer {
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  font-size: .8rem;
+  margin-top: 4rem;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Filter Bar – layout handled by Bootstrap row / col / g-3
+// ─────────────────────────────────────────────────────────────────────────────
+.form-input {
+  color: var(--text);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  width: 100%;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem 1.2rem;
+
+  &:focus {
+    border-color: var(--primary-text);
+    box-shadow: 0 0 0 4px var(--focus-ring);
+  }
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
+}
+
+select.form-input {
+  appearance: none;
+  // Fake image
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237b7d9a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 3rem;
+  cursor: pointer;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pagination – layout (flex) handled by Bootstrap d-flex utilities
+// ─────────────────────────────────────────────────────────────────────────────
+.pagination__info {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}

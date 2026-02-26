@@ -1,0 +1,22 @@
+{
+  "name": "catalog-frontend",
+  "version": "1.0.0",
+  "description": "Headless WordPress Catalog – jQuery + Bootstrap + Gulp frontend",
+  "private": true,
+  "scripts": {
+    "dev": "gulp watch",
+    "build": "gulp build"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "jquery": "^3.7.1"
+  },
+  "devDependencies": {
+    "browser-sync": "^3.0.3",
+    "gulp": "^5.0.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-sass": "^5.1.0",
+    "gulp-uglify": "^3.0.2",
+    "sass": "^1.77.4"
+  }
+}

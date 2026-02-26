@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apollo Client + SSE-2 Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        .status.connected { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.connecting { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.disconnected { background: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        button.primary { background: #007bff; color: white; }
+        button.primary:hover { background: #0056b3; }
+        button.success { background: #28a745; color: white; }
+        button.success:hover { background: #1e7e34; }
+        button.danger { background: #dc3545; color: white; }
+        button.danger:hover { background: #c82333; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .subscription-data {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .event-log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .event-log .timestamp { color: #569cd6; }
+        .event-log .event-type { color: #4ec9b0; }
+        .event-log .error { color: #f44747; }
+        .event-log .success { color: #4caf50; }
+        
+        .config-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .config-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .config-item label {
+            font-weight: 500;
+            color: #495057;
+        }
+        .config-item input {
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .subscription-examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .example-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+        }
+        .example-card h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        .example-card pre {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Apollo Client + SSE-2 Integration Demo</h1>
+        <p>This demo shows Apollo Client working with our SSE-2 GraphQL subscription sidecar using Server-Sent Events.</p>
+        
+        <div id="connection-status" class="status disconnected">
+            Disconnected - Ready to connect
+        </div>
+
+        <div class="config-section">
+            <div class="config-item">
+                <label for="sse-endpoint">SSE-2 Endpoint:</label>
+                <input type="text" id="sse-endpoint" value="http://localhost:4000/graphql" />
+            </div>
+            <div class="config-item">
+                <label for="post-id">Post ID to Subscribe:</label>
+                <input type="text" id="post-id" value="147" />
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="connect-btn" class="primary">Connect & Subscribe</button>
+            <button id="disconnect-btn" class="danger" disabled>Disconnect</button>
+            <button id="clear-log-btn" class="success">Clear Log</button>
+            <button id="test-query-btn" class="primary">Test Query</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="events-received">0</div>
+                <div class="stat-label">Events Received</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="connection-time">--</div>
+                <div class="stat-label">Connected For</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="last-event-time">--</div>
+                <div class="stat-label">Last Event</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h3>📡 Latest Subscription Data</h3>
+        <div id="subscription-data" class="subscription-data">
+            No data received yet. Start a subscription to see real-time updates here.
+        </div>
+    </div>
+
+    <div class="container">
+        <h3>📊 Event Log</h3>
+        <div id="event-log" class="event-log">
+            <div class="timestamp">[Ready]</div> Apollo Client + SSE-2 Demo initialized. Click "Connect & Subscribe" to start.
+        </div>
+    </div>
+
+    <div class="container">
+        <h3>📋 Example Subscriptions</h3>
+        <div class="subscription-examples">
+            <div class="example-card">
+                <h4>Post Updates</h4>
+                <pre>subscription PostUpdated($id: ID!) {
+  postUpdated(id: $id) {
+    id
+    title
+    content
+    modified
+    author {
+      node {
+        name
+      }
+    }
+  }
+}</pre>
+                <button onclick="useExample('postUpdated')" class="primary">Use This</button>
+            </div>
+            
+            <div class="example-card">
+                <h4>Comment Notifications</h4>
+                <pre>subscription CommentAdded($nodeId: ID!) {
+  commentAdded(nodeId: $nodeId) {
+    id
+    content
+    date
+    author {
+      node {
+        name
+        email
+      }
+    }
+  }
+}</pre>
+                <button onclick="useExample('commentAdded')" class="primary">Use This</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Apollo Client from CDN (UMD build) -->
+    <script src="https://unpkg.com/@apollo/client@3.8.8/dist/main.cjs.js"></script>
+    
+    <script>
+        // Check what's available in global scope
+        console.log('Available Apollo Client exports:', Object.keys(window.apolloClient || {}));
+        
+        // Extract Apollo Client components from global - try multiple paths
+        let ApolloClient, InMemoryCache, ApolloLink, Observable, gql, getMainDefinition;
+        
+        if (window.apolloClient) {
+            // Try different export patterns
+            ApolloClient = window.apolloClient.ApolloClient || window.apolloClient.core?.ApolloClient;
+            InMemoryCache = window.apolloClient.InMemoryCache || window.apolloClient.cache?.InMemoryCache;
+            ApolloLink = window.apolloClient.ApolloLink || window.apolloClient.core?.ApolloLink;
+            Observable = window.apolloClient.Observable || window.apolloClient.core?.Observable;
+            gql = window.apolloClient.gql || window.apolloClient.core?.gql;
+            getMainDefinition = window.apolloClient.getMainDefinition || window.apolloClient.utilities?.getMainDefinition;
+        }
+        
+        // Fallback: create minimal implementations if CDN fails
+        if (!ApolloClient || !ApolloLink || !Observable) {
+            console.warn('Apollo Client CDN failed, using fallback implementation');
+            
+            // Minimal Observable implementation
+            class SimpleObservable {
+                constructor(subscriberFunction) {
+                    this.subscriberFunction = subscriberFunction;
+                }
+                
+                subscribe(observer) {
+                    return this.subscriberFunction(observer);
+                }
+            }
+            
+            // Minimal ApolloLink implementation
+            class SimpleApolloLink {
+                constructor() {}
+                
+                request(operation) {
+                    throw new Error('Must implement request method');
+                }
+            }
+            
+            ApolloLink = ApolloLink || SimpleApolloLink;
+            Observable = Observable || SimpleObservable;
+        }
+
+        // Custom GraphQL-SSE Link for Apollo Client
+        class GraphQLSSELink extends ApolloLink {
+            constructor(options) {
+                super();
+                this.uri = options.uri;
+                this.headers = options.headers || {};
+            }
+
+            request(operation) {
+                return new Observable((observer) => {
+                    let abortController = null;
+                    let reader = null;
+
+                    const cleanup = () => {
+                        if (abortController) {
+                            abortController.abort();
+                        }
+                        if (reader) {
+                            reader.cancel().catch(() => {});
+                        }
+                    };
+
+                    const startSubscription = async () => {
+                        try {
+                            abortController = new AbortController();
+                            
+                            logEvent('info', `Starting subscription: ${operation.operationName || 'unnamed'}`);
+
+                            const response = await fetch(this.uri, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'text/event-stream',
+                                    'Cache-Control': 'no-cache',
+                                    ...this.headers,
+                                },
+                                body: JSON.stringify({
+                                    query: operation.query.loc.source.body,
+                                    variables: operation.variables || {},
+                                    operationName: operation.operationName,
+                                }),
+                                signal: abortController.signal,
+                            });
+
+                            if (!response.ok) {
+                                if (response.status === 400) {
+                                    const errorResponse = await response.json();
+                                    const errorMsg = errorResponse.errors?.[0]?.message || 'Bad Request';
+                                    logEvent('error', `Subscription error: ${errorMsg}`);
+                                    observer.error(new Error(errorMsg));
+                                    return;
+                                }
+                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                            }
+
+                            reader = response.body.getReader();
+                            const decoder = new TextDecoder();
+                            
+                            logEvent('success', 'SSE connection established');
+                            updateConnectionStatus('connected', 'Connected - Receiving events');
+
+                            while (true) {
+                                const { done, value } = await reader.read();
+
+                                if (done) {
+                                    logEvent('info', 'SSE stream ended');
+                                    observer.complete();
+                                    break;
+                                }
+
+                                const text = decoder.decode(value, { stream: true });
+                                const lines = text.split('\n');
+
+                                for (const line of lines) {
+                                    if (line.startsWith('data: ') && line.length > 6) {
+                                        try {
+                                            const dataStr = line.substring(6);
+                                            const data = JSON.parse(dataStr);
+
+                                            // Skip connection establishment messages
+                                            if (data.data?.message?.includes('Subscription established')) {
+                                                continue;
+                                            }
+
+                                            logEvent('success', `Received data: ${JSON.stringify(data).substring(0, 100)}...`);
+                                            updateStats();
+                                            displaySubscriptionData(data);
+                                            observer.next(data);
+                                        } catch (parseError) {
+                                            logEvent('error', `Failed to parse SSE data: ${line}`);
+                                        }
+                                    } else if (line.startsWith('event: complete')) {
+                                        logEvent('info', 'Subscription completed');
+                                        observer.complete();
+                                        return;
+                                    }
+                                }
+                            }
+                        } catch (error) {
+                            if (error.name === 'AbortError') {
+                                logEvent('info', 'Subscription cancelled by user');
+                                observer.complete();
+                            } else {
+                                logEvent('error', `Subscription error: ${error.message}`);
+                                observer.error(error);
+                            }
+                        }
+                    };
+
+                    startSubscription();
+                    return cleanup;
+                });
+            }
+        }
+
+        // Demo state
+        let apolloClient = null;
+        let currentSubscription = null;
+        let connectionStartTime = null;
+        let eventsReceived = 0;
+        let connectionTimer = null;
+
+        // Initialize Apollo Client
+        function initializeApolloClient() {
+            const sseEndpoint = document.getElementById('sse-endpoint').value;
+            
+            const sseLink = new GraphQLSSELink({
+                uri: sseEndpoint,
+            });
+
+            apolloClient = new ApolloClient({
+                link: sseLink,
+                cache: new InMemoryCache(),
+                defaultOptions: {
+                    watchQuery: { errorPolicy: 'all' },
+                    query: { errorPolicy: 'all' },
+                },
+            });
+
+            logEvent('success', 'Apollo Client initialized with SSE link');
+        }
+
+        // Connect and start subscription
+        function connect() {
+            if (!apolloClient) {
+                initializeApolloClient();
+            }
+
+            const postId = document.getElementById('post-id').value;
+            
+            updateConnectionStatus('connecting', 'Connecting...');
+            
+            const subscription = gql`
+                subscription PostUpdated($id: ID!) {
+                    postUpdated(id: $id) {
+                        id
+                        title
+                        content
+                        modified
+                        author {
+                            node {
+                                name
+                            }
+                        }
+                    }
+                }
+            `;
+
+            currentSubscription = apolloClient.subscribe({
+                query: subscription,
+                variables: { id: postId },
+            }).subscribe({
+                next: (result) => {
+                    if (result.errors) {
+                        logEvent('error', `GraphQL errors: ${JSON.stringify(result.errors)}`);
+                        updateConnectionStatus('error', `Error: ${result.errors[0].message}`);
+                    } else {
+                        logEvent('success', 'Received subscription data');
+                    }
+                },
+                error: (error) => {
+                    logEvent('error', `Network error: ${error.message}`);
+                    updateConnectionStatus('error', `Connection error: ${error.message}`);
+                    enableConnectButton();
+                },
+                complete: () => {
+                    logEvent('info', 'Subscription completed');
+                    updateConnectionStatus('disconnected', 'Disconnected');
+                    enableConnectButton();
+                },
+            });
+
+            connectionStartTime = Date.now();
+            eventsReceived = 0;
+            startConnectionTimer();
+            
+            document.getElementById('connect-btn').disabled = true;
+            document.getElementById('disconnect-btn').disabled = false;
+        }
+
+        // Disconnect subscription
+        function disconnect() {
+            if (currentSubscription) {
+                currentSubscription.unsubscribe();
+                currentSubscription = null;
+                logEvent('info', 'Subscription disconnected by user');
+            }
+            
+            updateConnectionStatus('disconnected', 'Disconnected');
+            enableConnectButton();
+            stopConnectionTimer();
+        }
+
+        // Update connection status
+        function updateConnectionStatus(status, message) {
+            const statusEl = document.getElementById('connection-status');
+            statusEl.className = `status ${status}`;
+            statusEl.textContent = message;
+        }
+
+        // Enable connect button
+        function enableConnectButton() {
+            document.getElementById('connect-btn').disabled = false;
+            document.getElementById('disconnect-btn').disabled = true;
+        }
+
+        // Log events
+        function logEvent(type, message) {
+            const logEl = document.getElementById('event-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const typeClass = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+            
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span> <span class="event-type ${typeClass}">[${type.toUpperCase()}]</span> ${message}`;
+            
+            logEl.appendChild(logEntry);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        // Display subscription data
+        function displaySubscriptionData(data) {
+            const dataEl = document.getElementById('subscription-data');
+            dataEl.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // Update stats
+        function updateStats() {
+            eventsReceived++;
+            document.getElementById('events-received').textContent = eventsReceived;
+            document.getElementById('last-event-time').textContent = new Date().toLocaleTimeString();
+        }
+
+        // Connection timer
+        function startConnectionTimer() {
+            connectionTimer = setInterval(() => {
+                if (connectionStartTime) {
+                    const elapsed = Math.floor((Date.now() - connectionStartTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    document.getElementById('connection-time').textContent = 
+                        `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function stopConnectionTimer() {
+            if (connectionTimer) {
+                clearInterval(connectionTimer);
+                connectionTimer = null;
+            }
+            document.getElementById('connection-time').textContent = '--';
+        }
+
+        // Clear log
+        function clearLog() {
+            const logEl = document.getElementById('event-log');
+            logEl.innerHTML = '<div class="timestamp">[Cleared]</div> Event log cleared.';
+        }
+
+        // Test query (placeholder)
+        function testQuery() {
+            logEvent('info', 'Test query functionality not implemented in this demo');
+            alert('Test query functionality would send a regular GraphQL query to WPGraphQL endpoint.');
+        }
+
+        // Use example subscription
+        function useExample(type) {
+            if (type === 'postUpdated') {
+                document.getElementById('post-id').value = '147';
+                logEvent('info', 'Switched to Post Updates example');
+            } else if (type === 'commentAdded') {
+                document.getElementById('post-id').value = '147';
+                logEvent('info', 'Switched to Comment Notifications example (Note: This demo uses postUpdated)');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('connect-btn').addEventListener('click', connect);
+        document.getElementById('disconnect-btn').addEventListener('click', disconnect);
+        document.getElementById('clear-log-btn').addEventListener('click', clearLog);
+        document.getElementById('test-query-btn').addEventListener('click', testQuery);
+
+        // Initialize
+        logEvent('info', 'Apollo Client + SSE-2 Demo loaded successfully');
+        logEvent('info', 'Make sure your SSE-2 sidecar is running on http://localhost:4000');
+        logEvent('info', 'Configure endpoints above and click "Connect & Subscribe" to start');
+    </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+# WordPress Headless – Security Rules
+# Mount this file into the WordPress container root.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    RewriteBase /
+    RewriteRule ^index\.php$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /index.php [L]
+
+    # ── 1. Open the door for GraphQL ──────────────────────────────
+    RewriteCond %{REQUEST_URI} ^/graphql [NC]
+    RewriteRule ^ - [L]
+
+    # ── 2. Open the door for Media Uploads ───────────────────────
+    RewriteCond %{REQUEST_URI} ^/wp-content/uploads/ [NC]
+    RewriteRule ^ - [L]
+
+    # ── 3. WordPress admin – restrict to your IP ─────────────────
+    # Uncomment and replace 123.45.67.89 with your real IP address.
+    # RewriteCond %{REQUEST_URI} ^/wp-admin [NC,OR]
+    # RewriteCond %{REQUEST_URI} ^/wp-login\.php [NC]
+    # RewriteCond %{REMOTE_ADDR} !=123.45.67.89
+    # RewriteRule ^ - [F]
+
+    # ── 4. Allow normal WordPress admin (while uncommented above) ─
+    RewriteCond %{REQUEST_URI} ^/wp-admin [NC]
+    RewriteRule ^ - [L]
+
+    RewriteCond %{REQUEST_URI} ^/wp-login\.php [NC]
+    RewriteRule ^ - [L]
+</IfModule>

@@ -1,0 +1,68 @@
+{
+  "name": "@wp-graphql/subscriptions-sse-server",
+  "version": "0.1.0",
+  "description": "Minimal GraphQL-SSE subscription server for WPGraphQL real-time subscriptions",
+  "main": "dist/server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "npm run build:server && npm run build:graphiql",
+    "build:server": "tsc",
+    "build:graphiql": "webpack --mode production",
+    "build:graphiql:dev": "webpack --mode development --watch",
+    "start": "node dist/server.js",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit",
+    "redis:start": "docker run -d --name wp-graphql-redis -p 6379:6379 redis:7-alpine",
+    "redis:stop": "docker stop wp-graphql-redis && docker rm wp-graphql-redis",
+    "redis:logs": "docker logs -f wp-graphql-redis",
+    "dev:full": "npm run redis:start && sleep 2 && npm run dev",
+    "kill": "lsof -ti:4000 | xargs -r kill -9 && pkill -f tsx || true",
+    "kill:all": "npm run kill && npm run redis:stop || true",
+    "restart": "npm run kill && sleep 2 && npm run dev",
+    "restart:full": "npm run kill:all && sleep 2 && npm run dev:full",
+    "status": "echo '=== Port 4000 ===' && lsof -ti:4000 && echo '=== TSX Processes ===' && ps aux | grep tsx | grep -v grep && echo '=== Redis Container ===' && docker ps | grep wp-graphql-redis || echo 'No processes found'"
+  },
+  "keywords": [
+    "graphql",
+    "subscriptions",
+    "server-sent-events",
+    "sse",
+    "wpgraphql",
+    "wordpress",
+    "real-time"
+  ],
+  "author": "WPGraphQL Team",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "dotenv": "^17.2.1",
+    "graphql": "^16.8.1",
+    "graphiql": "^3.0.6",
+    "node-fetch": "^3.3.2",
+    "pino": "^8.17.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "redis": "^4.6.12"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.7",
+    "@babel/preset-react": "^7.23.3",
+    "@babel/preset-typescript": "^7.23.3",
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "babel-loader": "^9.1.3",
+    "css-loader": "^6.10.0",
+    "html-webpack-plugin": "^5.6.0",
+    "pino-pretty": "^10.3.1",
+    "style-loader": "^3.3.4",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Catalog – Discover Premium Items</title>
+    <meta name="description"
+        content="Browse our curated catalog. Members unlock exclusive pricing and additional collections." />
+
+    <!-- Preloads -->
+    <link rel="preload" href="css/main.css" as="style" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/main.css" />
+
+    <!-- Structured Data -->
+    <script id="catalog-schema" type="application/ld+json">{}</script>
+</head>
+
+<body>
+
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <!-- ── Navbar ─────────────────────────────────────────────────────────── -->
+    <nav class="navbar sticky-top d-flex align-items-center justify-content-between px-3 px-md-4 py-2"
+        aria-label="Main navigation">
+        <a class="navbar__brand" href="index.html">✦ Catalog</a>
+
+        <div class="d-flex align-items-center gap-2">
+
+            <!-- Shown when logged in -->
+            <span id="user-greeting" style="display:none; color:var(--text-muted); font-size:.85rem;">
+                Welcome, <strong>User</strong>
+            </span>
+
+            <a id="btn-login" class="btn btn-primary" href="login.html">Log In</a>
+
+            <button id="btn-logout" class="btn btn-ghost" style="display:none;">
+                Log Out
+            </button>
+
+        </div>
+    </nav>
+
+    <!-- ── Hero ───────────────────────────────────────────────────────────── -->
+    <section class="hero">
+        <div class="container text-center position-relative py-5">
+            <div class="hero__eyebrow">Headless WordPress + GraphQL</div>
+            <h1 class="hero__title">
+                Discover Our<br><span>Curated Catalog</span>
+            </h1>
+            <p class="hero__sub mx-auto">
+                Browse hand-picked items. Log in to unlock member-exclusive collections and special pricing.
+            </p>
+            <a id="hero-cta" href="login.html" class="btn btn-primary">Unlock All Items →</a>
+        </div>
+    </section>
+
+    <!-- ── Set A – Public ─────────────────────────────────────────────────── -->
+    <main id="main-content">
+        <div class="container py-4">
+
+            <div class="row g-3 mb-4 align-items-center">
+                <div class="col-12 col-md">
+                    <input type="text" id="catalog-search" placeholder="Search catalog..." class="form-input w-100"
+                        aria-label="Search public catalog">
+                </div>
+                <div class="col-12 col-md-auto">
+                    <select id="catalog-category" class="form-input w-100" aria-label="Filter by category"
+                        style="min-width:220px;">
+                        <option value="">All Categories</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Footwear">Footwear</option>
+                        <option value="Home & Office">Home & Office</option>
+                        <option value="Outdoor">Outdoor</option>
+                        <option value="Bags">Bags</option>
+                        <option value="Fitness">Fitness</option>
+                        <option value="Wearables">Wearables</option>
+                        <option value="Accessories">Accessories</option>
+                    </select>
+                </div>
+            </div>
+
+            <p class="section__label">Available to everyone</p>
+            <h2 class="section__title">Public Collection</h2>
+
+            <div id="set-a-grid" class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+                <!-- Rendered by JS -->
+            </div>
+
+            <!-- Pagination A -->
+            <div id="pagination-a"
+                class="d-flex justify-content-center align-items-center gap-4 mt-4 pt-4 border-top border-secondary border-opacity-25"
+                style="display:none;">
+                <button id="btn-prev-a" class="btn btn-ghost" disabled>← Previous</button>
+                <span id="page-info-a" class="pagination__info">Page 1</span>
+                <button id="btn-next-a" class="btn btn-ghost">Next →</button>
+            </div>
+
+            <!-- ── Set B – Members ────────────────────────────────────────────────── -->
+            <section id="set-b-section" style="display:none;">
+
+                <!-- Divider -->
+                <div class="members-divider d-flex align-items-center gap-3 my-4">
+                    <div class="members-divider__line flex-grow-1"></div>
+                    <div class="members-divider__label">★ Members Collection</div>
+                    <div class="members-divider__line flex-grow-1"></div>
+                </div>
+
+                <!-- Auth gate (not logged in) -->
+                <div id="auth-gate" class="auth-gate text-center" style="display:none;">
+                    <div class="auth-gate__icon">🔒</div>
+                    <h3 class="auth-gate__title">Members-Only Collection</h3>
+                    <p class="auth-gate__desc">
+                        Log in to access exclusive items, member pricing, and special releases.
+                    </p>
+                    <a href="login.html" class="btn btn-gold">Log In to Unlock</a>
+                </div>
+
+                <!-- Filter bar for Members -->
+                <div id="filter-bar-b" class="row g-3 mb-4 align-items-center" style="display:none;">
+                    <div class="col-12 col-md">
+                        <input type="text" id="catalog-search-b" placeholder="Search members catalog..."
+                            class="form-input w-100" aria-label="Search members catalog">
+                    </div>
+                    <div class="col-12 col-md-auto">
+                        <select id="catalog-category-b" class="form-input w-100" aria-label="Filter members by category"
+                            style="min-width:220px;">
+                            <option value="">All Categories</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Footwear">Footwear</option>
+                            <option value="Home & Office">Home & Office</option>
+                            <option value="Outdoor">Outdoor</option>
+                            <option value="Bags">Bags</option>
+                            <option value="Fitness">Fitness</option>
+                            <option value="Wearables">Wearables</option>
+                            <option value="Accessories">Accessories</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Member cards (logged in) -->
+                <div id="set-b-grid" class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+                    <!-- Rendered by JS -->
+                </div>
+
+                <!-- Pagination B -->
+                <div id="pagination-b"
+                    class="d-flex justify-content-center align-items-center gap-4 mt-4 pt-4 border-top border-secondary border-opacity-25"
+                    style="display:none;">
+                    <button id="btn-prev-b" class="btn btn-ghost" disabled>← Previous</button>
+                    <span id="page-info-b" class="pagination__info">Page 1</span>
+                    <button id="btn-next-b" class="btn btn-ghost">Next →</button>
+                </div>
+
+            </section>
+
+        </div><!-- /.container -->
+    </main>
+
+    <!-- ── Footer ─────────────────────────────────────────────────────────── -->
+    <footer class="site-footer">
+        <div class="container text-center py-4">
+            <p>© 2026 Catalog · Powered by WordPress + WPGraphQL</p>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>

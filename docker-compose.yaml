@@ -1,0 +1,138 @@
+services:
+
+  # ──────────────────────────────────────────
+  # MySQL 8
+  # ──────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: catalog_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wp_user
+      MYSQL_PASSWORD: wp_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - catalog_net
+
+  # ──────────────────────────────────────────
+  # WordPress
+  # ──────────────────────────────────────────
+  wordpress:
+    image: wordpress:latest
+    container_name: catalog_wordpress
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - redis
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wp_user
+      WORDPRESS_DB_PASSWORD: wp_password
+      # Extra PHP config passed via WORDPRESS_CONFIG_EXTRA
+      WORDPRESS_CONFIG_EXTRA: |
+        define('GRAPHQL_JWT_AUTH_SECRET_KEY', 'your_custom_secret_token_here');
+        define('WP_REDIS_HOST', 'redis');
+        define('WP_REDIS_PORT', 6379);
+        define('WP_CACHE', true);
+        define('GRAPHQL_DEBUG', true);
+    volumes:
+      # Mount our plugin and .htaccess into the container
+      - ./wordpress_backend/plugins:/var/www/html/wp-content/plugins/
+      - ./wordpress_backend/.htaccess:/var/www/html/.htaccess
+      # Shared volume so wpcli container can access the same WP files
+      - wordpress_files:/var/www/html
+    networks:
+      - catalog_net
+
+  # ──────────────────────────────────────────
+  # phpMyAdmin
+  # ──────────────────────────────────────────
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: catalog_phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root_password
+    networks:
+      - catalog_net
+
+  # ──────────────────────────────────────────
+  # Redis (object cache)
+  # ──────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: catalog_redis
+    restart: unless-stopped
+    networks:
+      - catalog_net
+
+  # ──────────────────────────────────────────
+  # WP-CLI
+  # ──────────────────────────────────────────
+  wpcli:
+    image: wordpress:cli
+    container_name: catalog_wpcli
+    restart: on-failure
+    depends_on:
+      - wordpress
+      - mysql
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wp_user
+      WORDPRESS_DB_PASSWORD: wp_password
+    volumes:
+      - ./wordpress_backend/plugins:/var/www/html/wp-content/plugins/
+      - wordpress_files:/var/www/html
+    networks:
+      - catalog_net
+    entrypoint: [ "/bin/sh", "-c" ]
+    command:
+      - |
+        echo "Waiting for WordPress files..."
+        until [ -f /var/www/html/wp-config.php ]; do sleep 2; done
+        echo "wp-config.php found — running setup"
+
+        wp core install \
+          --url=http://localhost:8080 \
+          --title="Catalog" \
+          --admin_user=ggerick \
+          --admin_password=password \
+          --admin_email=erick@sitepulse.me \
+          --skip-email \
+          --allow-root 2>/dev/null || echo "Core already installed, skipping"
+
+        wp eval-file wp-content/plugins/catalog/seed-catalog.php --allow-root
+
+        # Enable pretty permalinks — REQUIRED for /graphql to work
+        wp rewrite structure '/%postname%/' --hard --allow-root
+        wp rewrite flush --hard --allow-root
+
+        # Activate plugins (safe to re-run – errors suppressed if already active)
+        wp plugin activate catalog --allow-root 2>/dev/null || true
+        wp plugin activate wp-graphql --allow-root 2>/dev/null || true
+        wp plugin activate wp-graphql-subscriptions --allow-root 2>/dev/null || true
+        wp plugin activate wp-graphql-jwt-authentication --allow-root 2>/dev/null || true
+
+        echo "Setup complete!"
+
+volumes:
+  mysql_data:
+  wordpress_files:
+
+
+networks:
+  catalog_net:
+    driver: bridge

@@ -14,7 +14,7 @@
     'use strict';
 
     // ── Config ────────────────────────────────────────────────────────────────
-    const WP_BASE = 'http://localhost:8080'; // Hey!!! Web must be changed for production #fgs-production-note (tag for myself xD)
+    const WP_BASE = 'https://catalog.nilbug.com'; // Hey!!! Web must be changed for production #fgs-production-note (tag for myself xD)
     const GQL_ENDPOINT = WP_BASE + '/graphql';
     const SSE_ENDPOINT = WP_BASE + '/graphql/stream';
     const TOKEN_KEY = 'catalog_jwt';

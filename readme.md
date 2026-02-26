@@ -61,6 +61,15 @@ If you are running WordPress on a standard LAMP/LEMP stack:
   - **Authenticated Users**: Supplying a JWT token in the request header gives access to both Sets A and B.
   - **Server-Side Pricing**: Item pricing is formulated dynamically on the server via `wp-graphql` based on the user's audience (logged-in vs. guest). It is explicitly delivered over the API response to avoid vulnerable client-side manipulation.
 
+## Accessibility and Inclusion
+The application is built with a strong focus on accessibility to ensure a great experience for all users:
+- **Color Contrast**: All UI elements meet WCAG 2.2 AA standards for readability and visual clarity.
+- **Semantic Landmarks**: Proper use of `<header>`, `<main>`, `<nav>`, and `<footer>` for clear document structure.
+- **ARIA Usage**: Enhanced screen reader support with descriptive `aria-label`, and role attributes.
+- **Skip to Main Content**: A functional "Skip to main content" link for keyboard users.
+- **Focus Visibility**: Clearly defined focus states for all interactive elements to support keyboard navigation.
+- **Semantic Roles**: Use of appropriate HTML5 elements and roles to convey meaning and functionality to assistive technologies.
+
 ## What I'd do next
 - **Migrate Frontend to a Component-Based Framework**: Transition from jQuery/Gulp to React/Next.js or Vue/Nuxt.js. I could use React with Next.js but i have like 2 years i am not working with React and probably you will ask me for complex and experienced questions and jQuery is the best solution for me to answer or implement quick improves based on my experience with this framework.
 - **Implement Automated Tests**: Add End-to-End tests (via Cypress or Playwright) to automatically verify that unauthenticated users absolutely cannot access Set B or specific pricing tiers.
